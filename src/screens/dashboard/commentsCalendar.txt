@@ -1,0 +1,262 @@
+import React, { useEffect, useState } from 'react';
+import { Modal, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+import moment from 'moment';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import * as translations from '../../services/translations/translate';
+import { getTranslation, TransText } from 'react-native-translation';
+
+import { colors } from '../styleColors';
+import { useGlobal } from '../../context/Global';
+const { white, red, black } = colors;
+
+LocaleConfig.locales['sp-sp'] = {
+  monthNames: [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ],
+  monthNamesShort: [
+    'Ene.',
+    'Feb.',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul.',
+    'Ago',
+    'Sep.',
+    'Oct.',
+    'Nov.',
+    'Dic.',
+  ],
+  dayNames: [
+    'Domingo',
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+  ],
+  dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'],
+};
+LocaleConfig.locales['en-us'] = {
+  monthNames: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'Dezember',
+  ],
+  monthNamesShort: [
+    'Jan.',
+    'Feb.',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'July.',
+    'Aug',
+    'Sep.',
+    'Oct.',
+    'Nov.',
+    'Dez.',
+  ],
+  dayNames: [
+    'Sunday',
+    'Munday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ],
+  dayNamesShort: ['Sun', 'Mun', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+};
+LocaleConfig.locales['pt-br'] = {
+  monthNames: [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ],
+  monthNamesShort: [
+    'Jan.',
+    'Fev.',
+    'Mar',
+    'Abr',
+    'Maio',
+    'Jun',
+    'Jul.',
+    'Ago',
+    'Set.',
+    'Out.',
+    'Nov.',
+    'Dez.',
+  ],
+  dayNames: [
+    'Domingo',
+    'Segunda',
+    'Terça',
+    'Quarta',
+    'Quinta',
+    'Sexta',
+    'Sábado',
+  ],
+  dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+};
+
+export const ModalCalendar = ({ modalVisible, closeDate, saveDate, setDateC, minDate, maxDate, markedDateProps }) => {
+  const {state} = useGlobal();
+  const {theme} = state;
+  const [markedDates, setMarkedDates] = useState(markedDateProps ? markedDateProps : {});
+
+  const todayDate = JSON.stringify(moment());
+  const minDateFormat = new Date(moment(minDate, 'DD/MM/YYYY'));
+  const maxDateFormat = new Date(moment(maxDate, 'DD/MM/YYYY'));
+
+  const themeCalendar = {
+    backgroundColor: white,
+    calendarBackground: black,
+    todayTextColor: state.companyColor,
+    dayTextColor: white,
+    textDisabledColor: '#A9A9A9',
+    monthTextColor: white,
+    arrowColor: state.companyColor,
+    textDayFontWeight: '300',
+    textMonthFontWeight: 'bold',
+    textDayHeaderFontWeight: '500',
+    textDayFontSize: 16,
+    textMonthFontSize: 18,
+    selectedDayBackgroundColor: state.companyColor,
+    selectedDayTextColor: white,
+    textDayHeaderFontSize: 13,
+    textSectionTitleColor: '#696969'
+  };
+
+  const selectDate = day => {
+    getSelectedDayEvents(day.dateString);
+    setDateC(day.dateString);
+  };
+
+  const getSelectedDayEvents = date => {
+    let markedDates = markedDateProps ? {...markedDateProps} : {};
+    markedDates[date] = { selected: true, color: 'black', textColor: 'white' };
+    setMarkedDates(markedDates);
+  };
+
+  return (
+    <Modal
+      style={s.modal}
+      animationType="fade"
+      transparent={true}
+      visible={modalVisible}>
+      <View style={s.modalContainer}>
+        <Calendar
+          style={s.calendarModal}
+          minDate={minDate ? moment(minDateFormat).format('YYYY-MM-DD') : JSON.parse(todayDate)}
+          maxDate={maxDate ? moment(maxDateFormat).format('YYYY-MM-DD') : null}
+          onDayPress={day => {
+            selectDate(day);
+          }}
+          markedDates={markedDates}
+          theme={themeCalendar}
+          disableAllTouchEventsForDisabledDays
+
+        />
+        <View style={s.viewModalButton}>
+          <TouchableOpacity
+            style={s.modalButton}
+            onPress={closeDate}>
+            <TransText style={s.textModalButton} dictionary={translations.default.cancelWithoutTab}></TransText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.modalButton}
+            onPress={saveDate}>
+            <TransText style={s.textModalButton} dictionary={translations.default.confirmar}></TransText>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+const s = StyleSheet.create({
+  modal: {},
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.60)',
+    justifyContent: 'flex-end',
+  },
+
+  calendarModal: {
+    width: '100%',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+
+  viewModalButton: {
+    backgroundColor: black,
+    height: 58,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+
+  modalButton: {
+    width: 80,
+    marginRight: 25,
+  },
+
+  textModalButton: {
+    marginTop: 2,
+    width: 80,
+    fontSize: 15,
+    color: white,
+  },
+});
+
+/*
+const theme = {backgroundColor: white,
+calendarBackground: white,
+todayTextColor: red,
+dayTextColor: black,
+textDisabledColor: '#A9A9A9',
+monthTextColor: black,
+arrowColor: red,
+textDayFontWeight: '300',
+textMonthFontWeight: 'bold',
+textDayHeaderFontWeight: '500',
+textDayFontSize: 16,
+textMonthFontSize: 18,
+selectedDayBackgroundColor: red,
+selectedDayTextColor: white,
+textDayHeaderFontSize: 13,
+textSectionTitleColor: '#696969'};
+*/
